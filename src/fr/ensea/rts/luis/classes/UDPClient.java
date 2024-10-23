@@ -1,17 +1,28 @@
 package fr.ensea.rts.luis.classes;
+import javax.net.ssl.SNIServerName;
 import java.net.*;
 import java.io.Console;
 
 public class UDPClient {
-    public static void main(String[] args) {if (args.length != 2) {
-        System.out.println("Usage: java UDPClient <server> <port>");
-        return;
-    }
+    private static String serverName;
+    private static int port;
 
-        String serverName = args[0];
-        int port = Integer.parseInt(args[1]);
-
+    public static void main(String[] args) {
         try {
+            Console console = System.console();
+            if (console == null) {
+                System.out.println("No console available");
+                return;
+            }
+            String serverName = console.readLine("Enter the port number: ");
+            String portInput = console.readLine("Enter the port number: ");
+            //int server = Integer.parseInt(serverName);
+            int port = Integer.parseInt(portInput);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(e);
+        }
+        try {
+
             InetAddress serverAddress = InetAddress.getByName(serverName);
             DatagramSocket socket = new DatagramSocket();
 
