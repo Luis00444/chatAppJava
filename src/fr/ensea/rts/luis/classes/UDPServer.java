@@ -40,7 +40,7 @@ public class UDPServer {
      * @throws SocketException if the socket could not be opened
      */
     public UDPServer(int portToListen) throws IllegalArgumentException, SocketException {
-
+        //TODO: change the condition to be an external function, because it is complex
         if (portToListen < minimumPortNumber || portToListen > maximumPortNumber){
             throw new IllegalArgumentException(
                     "Port value should be in the range [" + minimumPortNumber + "," + maximumPortNumber + "]"
@@ -56,9 +56,7 @@ public class UDPServer {
       * Constructs an UDPServer object with a default port
       * @throws SocketException if the socket could not be opened
       */
-    public UDPServer() throws SocketException {
-        this(defaultPort);
-    }
+    public UDPServer() throws SocketException {this(defaultPort);}
 
     /**
      * Starts to listen the default address and the selected port.
@@ -93,6 +91,7 @@ public class UDPServer {
     }
 
     public static void main(String[] args) throws IllegalArgumentException, IOException {
+        //TODO: create a function or object that has the task of extracting the arguments
         UDPServer server;
         if (args.length == 1){
             server = new UDPServer(Integer.parseInt(args[0]));
