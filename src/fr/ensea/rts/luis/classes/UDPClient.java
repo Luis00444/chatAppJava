@@ -3,10 +3,13 @@ import java.net.*;
 import java.io.Console;
 
 public class UDPClient {
-    public static void main(String[] args) {
+    public static void main(String[] args) {if (args.length != 2) {
+        System.out.println("Usage: java UDPClient <server> <port>");
+        return;
+    }
 
-        String serverName = "localhost";
-        int port = 8080;
+        String serverName = args[0];
+        int port = Integer.parseInt(args[1]);
 
         try {
             InetAddress serverAddress = InetAddress.getByName(serverName);
