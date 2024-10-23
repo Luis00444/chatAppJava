@@ -25,7 +25,7 @@ public class UDPClient {
                 String userInput = console.readLine();
 
                 // Exit if the user types "exit"
-                if (userInput.equalsIgnoreCase("exit")) {
+                if (userInput.equalsIgnoreCase("exit") || (userInput.length()>1024)){
                     System.out.println("Client exiting.");
                     break;
                 }
