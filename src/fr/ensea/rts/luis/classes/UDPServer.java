@@ -1,46 +1,81 @@
 package fr.ensea.rts.luis.classes;
 
-import javax.print.AttributeException;
 import java.io.IOException;
-import java.net.ServerSocket;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
+import java.nio.BufferOverflowException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class UDPServer {
-    private ServerSocket socket;
+    private final DatagramSocket socket;
     private boolean isListening;
-    private final int maxLengthOfString = 1024;
 
     public UDPServer(int portToListen) throws IllegalArgumentException, IOException {
         //todo: do the constructor
         if (portToListen < 0 || portToListen > 32767){
             throw new IllegalArgumentException("Port value should be in the range [0,16]");
         }
-        socket = new ServerSocket(portToListen);
+        InetSocketAddress address = new InetSocketAddress("0.0.0.0",portToListen);
+        socket = new DatagramSocket(address);
         isListening = false;
     }
     public UDPServer() throws IOException {
         this(1234);
     }
 
-    public void launch() throws IOException {
+    public void launch(){
         isListening = true;
-        socket.accept();
-        
+        int maxLengthOfString = 1024;
+        byte[] buffer = new byte[maxLengthOfString];
+        DatagramPacket packet = new DatagramPacket(buffer, maxLengthOfString);
+        try {
+            while (true) {
+                socket.receive(packet);
+                if (packet.getLength() > maxLengthOfString) throw new BufferOverflowException();
+                byte[] received = packet.getData();
+                String message = new String(Arrays.copyOfRange(received,0,packet.getLength()), StandardCharsets.UTF_8);
+                System.out.print("<<< " + message);
+            }
+        }
+        catch (IOException e){
+            System.err.println("Listening finalized with an IOException");
+            System.err.println(e.getMessage());
+        }
+        catch (BufferOverflowException e){
+            System.err.println("BufferOverflowException: Data received exceeded buffer size");
+            System.err.println(e.getMessage());
+        }
+        finally {
+            socket.close();
+        }
+
     }
 
-    public static void main(String[] args) throws IllegalArgumentException{
+    public static void main(String[] args) throws IllegalArgumentException, IOException {
         //todo: create the main that accept only one argument: the port
-        if (args.length > 1) {
+        UDPServer server;
+        if (args.length == 1){
+            server = new UDPServer(Integer.parseInt(args[0]));
+        }
+        else if (args.length == 0){
+            server = new UDPServer();
+        }
+        else{
             throw new IllegalArgumentException("Only accept one or zero arguments");
         }
+        System.out.println(server);
+        server.launch();
     }
 
     @Override
     public String toString() {
         if (isListening) {
-            return "Server is listening in port " + socket.getLocalPort();
+            return "Server is listening in port " + socket.getLocalPort() + " at " + socket.getLocalAddress();
         }
         else{
-            return "Server is not listening, with configured port " + socket.getLocalPort();
+            return "Server is not listening, with configured port " + socket.getLocalPort() + " at " + socket.getLocalAddress();
         }
     }
 }
