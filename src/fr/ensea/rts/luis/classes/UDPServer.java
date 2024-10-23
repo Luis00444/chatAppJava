@@ -12,10 +12,12 @@ public class UDPServer {
         //todo: create this method
     }
 
-    public void main(String[] args){
+    public static void main(String[] args){
         //todo: create the main that accept only one argument: the port
     }
 
-
-
+    @Override
+    public String toString() {
+        return "Server";
+    }
 }
