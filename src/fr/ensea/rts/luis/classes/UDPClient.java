@@ -8,21 +8,10 @@ public class UDPClient {
     private static int port;
 
     public static void main(String[] args) {
-        try {
-            Console console = System.console();
-            if (console == null) {
-                System.out.println("No console available");
-                return;
-            }
-            String serverName = console.readLine("Enter the port number: ");
-            String portInput = console.readLine("Enter the port number: ");
-            //int server = Integer.parseInt(serverName);
-            int port = Integer.parseInt(portInput);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(e);
-        }
-        try {
+        String serverName = args[0];
+        int port = Integer.parseInt(args[1]);
 
+        try {
             InetAddress serverAddress = InetAddress.getByName(serverName);
             DatagramSocket socket = new DatagramSocket();
 
@@ -34,10 +23,8 @@ public class UDPClient {
             }
             System.out.println("Type your message (type 'exit' to quit):");
 
-
             while (true) {
                 String userInput = console.readLine();
-
                 // Exit if the user types "exit"
                 if (userInput.equalsIgnoreCase("exit") || (userInput.length()>1024)){
                     System.out.println("Client exiting.");
