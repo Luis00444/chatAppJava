@@ -1,5 +1,6 @@
 package fr.ensea.rts.luis.classes;
 
+import java.io.Console;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -24,7 +25,7 @@ import java.util.Arrays;
 public class UDPServer {
     private final DatagramSocket socket;
     private boolean isListening;
-    static final int defaultPort = 1234;
+    private static final int defaultPort = 1234;
     private static final String hostAddress = "0.0.0.0";
     private static final int minimumPortNumber = 0;
     private static final int maximumPortNumber = 32767;
@@ -73,6 +74,9 @@ public class UDPServer {
      * Incoming datagrams are shown preceded by <<<
      */
     public void launch(){
+        if(!socket.isBound()){
+            throw new IllegalStateException("Server is not bound");
+        }
         isListening = true;
         byte[] buffer = new byte[maximumReceivedMessageLength];
         DatagramPacket packet = new DatagramPacket(buffer, maximumReceivedMessageLength);
@@ -80,18 +84,13 @@ public class UDPServer {
         try {
             while (!socket.isClosed()) {
                 socket.receive(packet);
-                if (packet.getLength() > maximumReceivedMessageLength) throw new BufferOverflowException();
                 byte[] received = packet.getData();
                 String message = new String(Arrays.copyOfRange(received,0,packet.getLength()), StandardCharsets.UTF_8);
-                System.out.print("<<< " + message);
+                System.out.println("<<< " + message);
             }
         }
         catch (IOException e){
             System.err.println("Listening finalized with an IOException");
-            System.err.println(e.getMessage());
-        }
-        catch (BufferOverflowException e){
-            System.err.println("BufferOverflowException: Data received exceeded buffer size");
             System.err.println(e.getMessage());
         }
         finally {
@@ -113,6 +112,10 @@ public class UDPServer {
             throw new IllegalArgumentException("Only accept one or zero arguments");
         }
         server.launch();
+    }
+
+    public int getPort(){
+        return socket.getLocalPort();
     }
 
     @Override
