@@ -3,7 +3,9 @@ import javax.net.ssl.SNIServerName;
 import java.io.IOException;
 import java.net.*;
 import java.io.Console;
-
+/****************************************
+*TCP client to read and send message
+ ***************************************/
 public class TCPClient {
     public static void main(String[] args) throws IOException {
         String Host = args[0];
