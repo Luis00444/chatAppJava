@@ -2,7 +2,10 @@ package fr.ensea.rts.luis.classes;
 import javax.net.ssl.SNIServerName;
 import java.net.*;
 import java.io.Console;
-
+// *****************************************************************
+// UDP client to send messages
+// Usage UDPClient.java "server" "port"
+//*********************************************************************
 public class UDPClient {
     private static String serverName;
     private static int port;
