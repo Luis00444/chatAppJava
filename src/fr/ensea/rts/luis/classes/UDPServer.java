@@ -40,8 +40,7 @@ public class UDPServer {
      * @throws SocketException if the socket could not be opened
      */
     public UDPServer(int portToListen) throws IllegalArgumentException, SocketException {
-        //TODO: change the condition to be an external function, because it is complex
-        if (portToListen < minimumPortNumber || portToListen > maximumPortNumber){
+        if (!validatePortNumber(portToListen)){
             throw new IllegalArgumentException(
                     "Port value should be in the range [" + minimumPortNumber + "," + maximumPortNumber + "]"
             );
@@ -51,6 +50,17 @@ public class UDPServer {
         isListening = false;
     }
 
+    /**
+     * Check if the port number is in the correct range
+     * @param portNumber the port number to check
+     * @return true if the port number is in range, else false
+     *
+     */
+    private static boolean validatePortNumber(int portNumber){
+        boolean compliesWithUpperBound = portNumber <= maximumPortNumber;
+        boolean compliesWithLowerBound = portNumber >= minimumPortNumber;
+        return compliesWithLowerBound && compliesWithUpperBound;
+    }
 
       /**
       * Constructs an UDPServer object with a default port
