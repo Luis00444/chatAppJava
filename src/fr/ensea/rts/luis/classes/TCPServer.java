@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 
-import static fr.ensea.rts.luis.classes.ServerBasics.*;
+import static fr.ensea.rts.luis.classes.ServerUtilities.*;
 
 public class TCPServer {
     private boolean isListening;
@@ -34,18 +34,14 @@ public class TCPServer {
         OutputStream output = receiveSocket.getOutputStream();
 
         while (!receiveSocket.isClosed()) {
-            int totalRead = input.read(buffer, 0, maximumReceivedMessageLength);
-
-            if (totalRead == EndOfFile){
-                receiveSocket.close();
-                break;
-            }
 
             String message = processInput(buffer,input);
+
             if (message.isEmpty()) {
                 receiveSocket.close();
                 break;
             }
+
             printAndEcho(message,output);
         }
         input.close();
@@ -57,6 +53,8 @@ public class TCPServer {
         String echo = message + "\n";
         output.write(echo.getBytes(StandardCharsets.UTF_8));
     }
+
+
     public static void main(String[] args) throws IOException {
         TCPServer server;
         int port = getPortNumberFromArgs(args);

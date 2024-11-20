@@ -6,7 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 
-import static fr.ensea.rts.luis.classes.ServerBasics.*;
+import static fr.ensea.rts.luis.classes.ServerUtilities.*;
 
 /**
  * Class UDPServer
@@ -63,12 +63,16 @@ public class UDPServer {
         System.out.println(this);
         try {
             while (!socket.isClosed()) {
+
                 socket.receive(packet);
                 byte[] received = packet.getData();
+
                 String message = getStringFromBuffer(received, packet.getLength());
+
                 if (message.isEmpty()){
                     socket.close();
                 }
+
                 else {
                     System.out.println("<<< " + message);
                 }
