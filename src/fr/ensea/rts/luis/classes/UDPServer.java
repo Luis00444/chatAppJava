@@ -84,7 +84,7 @@ public class UDPServer {
                 socket.receive(packet);
                 byte[] received = packet.getData();
                 String message = new String(Arrays.copyOfRange(received,0,packet.getLength()), StandardCharsets.UTF_8);
-                System.out.println("<<< " + message);
+                System.out.println("<<< " + message.replace("\n",""));
             }
         }
         catch (IOException e){
