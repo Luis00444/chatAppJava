@@ -2,11 +2,13 @@ package fr.ensea.rts.luis.classes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class TCPServer {
+    private static final int EndOfFile = -1;
     private boolean isListening;
     private static final int defaultPort = 1234;
     private static final String hostAddress = "0.0.0.0";
@@ -30,8 +32,8 @@ public class TCPServer {
         this(defaultPort);
     }
 
+
     void launch() throws IOException {
-        //TODO: finish this thing
         ServerSocket serverSocket = new ServerSocket(address.getPort(), maximumQueuedConnections, address.getAddress());
         isListening = true;
         byte[] buffer = new byte[maximumReceivedMessageLength];
@@ -39,38 +41,50 @@ public class TCPServer {
 
         Socket receiveSocket = serverSocket.accept();
         InputStream input = receiveSocket.getInputStream();
+        OutputStream output = receiveSocket.getOutputStream();
         while (!receiveSocket.isClosed()) {
             int totalRead = input.read(buffer, 0, maximumReceivedMessageLength);
-            String message = new String(Arrays.copyOfRange(buffer, 0, totalRead), StandardCharsets.UTF_8).replace("\n","");
+
+            if (totalRead == EndOfFile){
+                receiveSocket.close();
+                break;
+            }
+
+            String message = getStringFromBuffer(buffer, totalRead);
             if (message.isEmpty()) {
                 receiveSocket.close();
             }
             else {
                 System.out.println("<<< " + message);
+                String echo = message + "\n";
+                output.write(echo.getBytes(StandardCharsets.UTF_8));
             }
         }
         input.close();
         serverSocket.close();
-
-
-
     }
 
+    private static String getStringFromBuffer(byte[] buffer, int totalRead) {
+        byte[] clippedBuffer = Arrays.copyOfRange(buffer, 0, totalRead);
+        String bruteClippedString = new String(clippedBuffer, StandardCharsets.UTF_8);
+        return bruteClippedString.replaceAll("\n", "");
+    }
+
+    private static int getPortNumberFromArgs(String[] args) {
+        if (args.length == 0) {
+            return defaultPort;
+        }
+        if (args.length == 1) {
+            return Integer.parseInt(args[0]);
+        }
+        throw new IllegalArgumentException("Invalid number of arguments: This function accepts only 0 or one arguments, not " + args.length);
+    }
 
     public static void main(String[] args) throws IOException {
-        //TODO: create a function or object that has the task of extracting the arguments
         TCPServer server;
-        if (args.length == 1){
-            server = new TCPServer(Integer.parseInt(args[0]));
-        }
-        else if (args.length == 0){
-            server = new TCPServer();
-        }
-        else{
-            throw new IllegalArgumentException("Only accept one or zero arguments");
-        }
+        int port = getPortNumberFromArgs(args);
+        server = new TCPServer(port);
         server.launch();
-
     }
 
     private static boolean validatePortNumber(int portNumber){

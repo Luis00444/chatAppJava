@@ -67,6 +67,12 @@ public class UDPServer {
       */
     public UDPServer() throws SocketException {this(defaultPort);}
 
+    private static String getStringFromBuffer(byte[] buffer, int totalRead) {
+        byte[] clippedBuffer = Arrays.copyOfRange(buffer, 0, totalRead);
+        String bruteClippedString = new String(clippedBuffer, StandardCharsets.UTF_8);
+        return bruteClippedString.replaceAll("\n", "");
+    }
+
     /**
      * Starts to listen the default address and the selected port.
      * Incoming datagrams are shown preceded by <<<
@@ -83,8 +89,13 @@ public class UDPServer {
             while (!socket.isClosed()) {
                 socket.receive(packet);
                 byte[] received = packet.getData();
-                String message = new String(Arrays.copyOfRange(received,0,packet.getLength()), StandardCharsets.UTF_8);
-                System.out.println("<<< " + message.replace("\n",""));
+                String message = getStringFromBuffer(received, packet.getLength());
+                if (message.isEmpty()){
+                    socket.close();
+                }
+                else {
+                    System.out.println("<<< " + message);
+                }
             }
         }
         catch (IOException e){
@@ -96,19 +107,19 @@ public class UDPServer {
         }
 
     }
+    private static int getPortNumberFromArgs(String[] args) {
+        if (args.length == 0) {
+            return defaultPort;
+        }
+        if (args.length == 1) {
+            return Integer.parseInt(args[0]);
+        }
+        throw new IllegalArgumentException("Invalid number of arguments: This function accepts only 0 or one arguments, not " + args.length);
+    }
 
     public static void main(String[] args) throws IllegalArgumentException, IOException {
-        //TODO: create a function or object that has the task of extracting the arguments
         UDPServer server;
-        if (args.length == 1){
-            server = new UDPServer(Integer.parseInt(args[0]));
-        }
-        else if (args.length == 0){
-            server = new UDPServer();
-        }
-        else{
-            throw new IllegalArgumentException("Only accept one or zero arguments");
-        }
+        server = new UDPServer(getPortNumberFromArgs(args));
         server.launch();
     }
 
