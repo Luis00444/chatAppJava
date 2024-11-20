@@ -1,5 +1,4 @@
 package fr.ensea.rts.luis.classes;
-import javax.net.ssl.SNIServerName;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -42,6 +41,7 @@ public class TCPClient {
         System.out.println("Type your message (type 'exit' to quit):");
 
         //Get text from User until types <ctrl>+D
+
         while (true) {
             String userInput = console.readLine();
             if (userInput == null || (userInput.length() > 1024)) {
@@ -49,7 +49,5 @@ public class TCPClient {
                 break;
             }
         }
-
-        byte[] data = userInput.getBytes("UTF-8");
     }
 }
