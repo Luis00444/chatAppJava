@@ -1,12 +1,10 @@
 package fr.ensea.rts.luis.classes;
 
-import java.io.Console;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
-import java.nio.BufferOverflowException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -29,7 +27,7 @@ public class UDPServer {
     private static final String hostAddress = "0.0.0.0";
     private static final int minimumPortNumber = 0;
     private static final int maximumPortNumber = 32767;
-    private static final int maximumReceivedMessageLength = 1024;
+    public static final int maximumReceivedMessageLength = 1024;
 
 
     /**
@@ -112,10 +110,6 @@ public class UDPServer {
             throw new IllegalArgumentException("Only accept one or zero arguments");
         }
         server.launch();
-    }
-
-    public int getPort(){
-        return socket.getLocalPort();
     }
 
     @Override
