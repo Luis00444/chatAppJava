@@ -1,15 +1,16 @@
 package fr.ensea.rts.luis.tests;
 
-import fr.ensea.rts.luis.classes.UDPClient;
 import fr.ensea.rts.luis.classes.UDPServer;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.engine.discovery.predicates.IsNestedTestClass;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.*;
-import java.nio.BufferOverflowException;
 import java.nio.charset.StandardCharsets;
+
+import static java.lang.Integer.min;
+import static java.lang.Thread.sleep;
 
 class UDPServerTest {
 
@@ -29,18 +30,22 @@ class UDPServerTest {
         Thread thread1;
         Thread thread2;
         DatagramSocket socket;
+        static ByteArrayOutputStream myOut;
+        @BeforeAll
+        static void redirectStandardOutput(){
+            myOut = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(myOut));
+        }
         @AfterEach
         void tearDown() {
             thread1.interrupt();
-
+            myOut.reset();
         }
         @Test
         void launch_correct() throws IOException {
             UDPServer server =  new UDPServer(1236);
             Assertions.assertNotNull(server);
-            thread1 = new Thread(() -> {
-                Assertions.assertDoesNotThrow(server::launch,"Unintended throw at launch");
-            });
+            thread1 = new Thread(() -> Assertions.assertDoesNotThrow(server::launch,"Unintended throw at launch"));
             thread2 = new Thread(() -> {
                 try {
                     socket = new DatagramSocket(1235);
@@ -53,11 +58,10 @@ class UDPServerTest {
                 packet.setAddress(InetAddress.getLoopbackAddress());
                 packet.setPort(1236);
                 try {
-                    socket.send(packet);
-                } catch (IOException e) {
+                    send_package_and_test(message, packet);
+                } catch (IOException | InterruptedException e) {
                     throw new RuntimeException(e);
-                }
-                finally {
+                } finally {
                     socket.close();
                 }
             });
@@ -66,18 +70,29 @@ class UDPServerTest {
 
         }
 
+        private void send_package_and_test(String message, DatagramPacket packet) throws IOException, InterruptedException {
+            socket.send(packet);
+
+            sleep(1000);
+
+            myOut.flush();
+
+            String[] shown = myOut.toString().split("\n");
+            String received = shown[shown.length - 1].split("\r")[0];
+            Assertions.assertEquals("<<< " + message.substring(0,  min(1024,message.length())), received);
+        }
+
         @Test
         void launch_incorrect() throws IOException, InterruptedException {
             UDPServer server =  new UDPServer(1237);
             Assertions.assertNotNull(server);
-            thread1 = new Thread(() -> {
-                Assertions.assertDoesNotThrow(server::launch,"Unintended throw at launch");
-            });
+            thread1 = new Thread(() -> Assertions.assertDoesNotThrow(server::launch,"Unintended throw at launch"));
             thread1.start();
 
             try {
-                socket = new DatagramSocket(1235);
-            } catch (SocketException e) {
+                socket = new DatagramSocket(1400);
+            }
+            catch (SocketException e) {
                 throw new RuntimeException(e);
             }
 
@@ -86,7 +101,7 @@ class UDPServerTest {
             packet.setAddress(InetAddress.getLoopbackAddress());
             packet.setPort(1237);
             try {
-                socket.send(packet);
+                send_package_and_test(message, packet);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

@@ -13,6 +13,7 @@ public class TCPServer {
     private static final int minimumPortNumber = 0;
     private static final int maximumPortNumber = 32767;
     private static final int maximumReceivedMessageLength = 1024;
+    private static final int maximumQueuedConnections = 10;
     private final InetSocketAddress address;
 
     public TCPServer(int portToListen) {
@@ -31,17 +32,22 @@ public class TCPServer {
 
     void launch() throws IOException {
         //TODO: finish this thing
-        ServerSocket serverSocket = new ServerSocket(address.getPort(), 10, address.getAddress());
+        ServerSocket serverSocket = new ServerSocket(address.getPort(), maximumQueuedConnections, address.getAddress());
         isListening = true;
         byte[] buffer = new byte[maximumReceivedMessageLength];
         System.out.println(this);
 
         Socket receiveSocket = serverSocket.accept();
         InputStream input = receiveSocket.getInputStream();
-        while (receiveSocket.isInputShutdown()) {
+        while (!receiveSocket.isClosed()) {
             int totalRead = input.read(buffer, 0, maximumReceivedMessageLength);
-            String message = new String(Arrays.copyOfRange(buffer, 0, totalRead), StandardCharsets.UTF_8);
-            System.out.println("<<< " + message);
+            String message = new String(Arrays.copyOfRange(buffer, 0, totalRead), StandardCharsets.UTF_8).replace("\n","");
+            if (message.isEmpty()) {
+                receiveSocket.close();
+            }
+            else {
+                System.out.println("<<< " + message);
+            }
         }
         input.close();
         serverSocket.close();
