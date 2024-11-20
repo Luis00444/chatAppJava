@@ -33,7 +33,7 @@ public class TCPClient {
         while ((userInput = userInputReader.readLine()) != null) {
             serverWriter.println("Client:" + userInput);
             String serverOutput = serverReader.readLine();
-            serverWriter.println(serverOutput);
+            System.out.println(serverOutput);
         }
         System.out.println("Connection closed.");
 

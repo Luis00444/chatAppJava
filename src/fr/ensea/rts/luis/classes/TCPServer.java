@@ -8,21 +8,37 @@ import java.nio.charset.StandardCharsets;
 
 import static fr.ensea.rts.luis.classes.ServerUtilities.*;
 
+/**
+ * Creates a TCP echo server that receive a connection and send what it receives
+ * to the client
+ */
 public class TCPServer {
     private boolean isListening;
     private static final int maximumQueuedConnections = 10;
     private final InetSocketAddress address;
 
+    /**
+     * Creates a TCP Server in the specified port
+     * @param portToListen the port the server will listen
+     * @throws IllegalArgumentException if it receives an invalid port number
+     */
     public TCPServer(int portToListen) throws IllegalArgumentException {
         testPortNumber(portToListen);
         address = new InetSocketAddress(defaultHostAddress,portToListen);
         isListening = false;
     }
 
-    public TCPServer() {
+    /**
+     * creates a TCP server in the default port
+     */
+    public TCPServer(){
         this(defaultPort);
     }
 
+    /**
+     * Launch the server, so it start listening
+     * @throws IOException If an I/O error occurs
+     */
     public void launch() throws IOException {
         ServerSocket serverSocket = new ServerSocket(address.getPort(), maximumQueuedConnections, address.getAddress());
         isListening = true;
@@ -48,9 +64,16 @@ public class TCPServer {
         serverSocket.close();
     }
 
+    /**
+     * Prints a message and send to the output stream the same message
+     * @param message
+     * @param output
+     * @throws IOException
+     */
     private void printAndEcho(String message, OutputStream output) throws IOException {
         System.out.println("<<< " + message);
         String echo = message + "\n";
+        System.out.println(">>> " + message);
         output.write(echo.getBytes(StandardCharsets.UTF_8));
     }
 
