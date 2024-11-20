@@ -18,7 +18,7 @@ public class UDPClient {
             InetAddress serverAddress = InetAddress.getByName(serverName);
             DatagramSocket socket = new DatagramSocket();
 
-            // Use the Console class to read user input
+            // Use console to read user input
             Console console = System.console();
             if (console == null) {
                 System.out.println("No console available");
