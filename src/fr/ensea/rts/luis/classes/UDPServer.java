@@ -5,8 +5,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+
+import static fr.ensea.rts.luis.classes.ServerUtilities.*;
 
 /**
  * Class UDPServer
@@ -23,11 +23,6 @@ import java.util.Arrays;
 public class UDPServer {
     private final DatagramSocket socket;
     private boolean isListening;
-    private static final int defaultPort = 1234;
-    private static final String hostAddress = "0.0.0.0";
-    private static final int minimumPortNumber = 0;
-    private static final int maximumPortNumber = 32767;
-    public static final int maximumReceivedMessageLength = 1024;
 
 
     /**
@@ -39,43 +34,24 @@ public class UDPServer {
      * @throws SocketException if the socket could not be opened
      */
     public UDPServer(int portToListen) throws IllegalArgumentException, SocketException {
-        if (!validatePortNumber(portToListen)){
-            throw new IllegalArgumentException(
-                    "Port value should be in the range [" + minimumPortNumber + "," + maximumPortNumber + "]"
-            );
-        }
-        InetSocketAddress address = new InetSocketAddress(hostAddress,portToListen);
+        testPortNumber(portToListen);
+        InetSocketAddress address = new InetSocketAddress(defaultHostAddress,portToListen);
         socket = new DatagramSocket(address);
         isListening = false;
     }
 
     /**
-     * Check if the port number is in the correct range
-     * @param portNumber the port number to check
-     * @return true if the port number is in range, else false
-     *
-     */
-    private static boolean validatePortNumber(int portNumber){
-        boolean compliesWithUpperBound = portNumber <= maximumPortNumber;
-        boolean compliesWithLowerBound = portNumber >= minimumPortNumber;
-        return compliesWithLowerBound && compliesWithUpperBound;
-    }
-
-      /**
       * Constructs an UDPServer object with a default port
       * @throws SocketException if the socket could not be opened
       */
     public UDPServer() throws SocketException {this(defaultPort);}
 
-    private static String getStringFromBuffer(byte[] buffer, int totalRead) {
-        byte[] clippedBuffer = Arrays.copyOfRange(buffer, 0, totalRead);
-        String bruteClippedString = new String(clippedBuffer, StandardCharsets.UTF_8);
-        return bruteClippedString.replaceAll("\n", "");
-    }
+
 
     /**
      * Starts to listen the default address and the selected port.
-     * Incoming datagrams are shown preceded by <<<
+     * Incoming datagrams are shown preceded by "<<< "
+     * If it receives an empty message, it finishes the while loop
      */
     public void launch(){
         if(!socket.isBound()){
@@ -87,12 +63,16 @@ public class UDPServer {
         System.out.println(this);
         try {
             while (!socket.isClosed()) {
+
                 socket.receive(packet);
                 byte[] received = packet.getData();
+
                 String message = getStringFromBuffer(received, packet.getLength());
+
                 if (message.isEmpty()){
                     socket.close();
                 }
+
                 else {
                     System.out.println("<<< " + message);
                 }
@@ -106,15 +86,6 @@ public class UDPServer {
             socket.close();
         }
 
-    }
-    private static int getPortNumberFromArgs(String[] args) {
-        if (args.length == 0) {
-            return defaultPort;
-        }
-        if (args.length == 1) {
-            return Integer.parseInt(args[0]);
-        }
-        throw new IllegalArgumentException("Invalid number of arguments: This function accepts only 0 or one arguments, not " + args.length);
     }
 
     public static void main(String[] args) throws IllegalArgumentException, IOException {

@@ -2,11 +2,9 @@ package fr.ensea.rts.luis.classes;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.io.InputStreamReader;
 
 /****************************************
 *TCP client to read and send message
- * Usage java TCPClient.java "server address" "port"
  ***************************************/
 public class TCPClient {
     public static void main(String[] args) throws IOException {
@@ -22,21 +20,35 @@ public class TCPClient {
             throw new UnknownHostException("Host not found." + e.getMessage());
         }
 
-        //Configuring Input/Output streams
-        BufferedReader userInputReader = new BufferedReader(new InputStreamReader(System.in));
-        BufferedReader serverReader = new BufferedReader(new InputStreamReader(tcp_socket.getInputStream(), StandardCharsets.UTF_8)); // Server response
-        PrintWriter serverWriter = new PrintWriter(new OutputStreamWriter(tcp_socket.getOutputStream(), StandardCharsets.UTF_8), true); // Send data to server;
-        System.out.println("Type your message and press Enter. Press <CTRL>+D(Z for windows) to exit.");
+        /* Sending text to Server */
+        OutputStream outputStream = tcp_socket.getOutputStream();
+        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+        PrintWriter printWriter = new PrintWriter(outputStreamWriter, true);
+        printWriter.println("Hello from Client");
 
-        String userInput;
-        while ((userInput = userInputReader.readLine()) != null) {
-            serverWriter.println("Client:" + userInput);
-            String serverOutput = serverReader.readLine();
-            serverWriter.println(serverOutput);
+        //Receive data from Server
+        InputStream inputStream = tcp_socket.getInputStream();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        String serverResponse = bufferedReader.readLine();
+        System.out.println(serverResponse);
+
+        // Use console to read user input
+        Console console = System.console();
+        if (console == null) {
+            System.out.println("No console available");
+            return;
         }
-        System.out.println("Connection closed.");
+        System.out.println("Type your message (type 'exit' to quit):");
 
-        // Close the socket when done
-        tcp_socket.close();
+        //Get text from User until types <ctrl>+D
+        while (true) {
+            String userInput = console.readLine();
+            if (userInput == null || (userInput.length() > 1024)) {
+                System.out.println("Client exiting.");
+                break;
+            }
+        }
+
+        byte[] data = userInput.getBytes("UTF-8");
     }
 }
