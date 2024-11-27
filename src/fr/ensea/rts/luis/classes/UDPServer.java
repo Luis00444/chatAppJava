@@ -1,10 +1,7 @@
 package fr.ensea.rts.luis.classes;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketException;
+import java.net.*;
 
 import static fr.ensea.rts.luis.classes.ServerUtilities.*;
 
@@ -21,7 +18,7 @@ import static fr.ensea.rts.luis.classes.ServerUtilities.*;
  *  </code>
  */
 public class UDPServer {
-    private final DatagramSocket socket;
+    private DatagramSocket socket;
     private boolean isListening;
 
 
@@ -60,10 +57,11 @@ public class UDPServer {
         isListening = true;
         byte[] buffer = new byte[maximumReceivedMessageLength];
         DatagramPacket packet = new DatagramPacket(buffer, maximumReceivedMessageLength);
+        packet.setPort(socket.getLocalPort());
+        packet.setAddress(socket.getLocalAddress());
         System.out.println(this);
         try {
             while (!socket.isClosed()) {
-
                 socket.receive(packet);
                 byte[] received = packet.getData();
 

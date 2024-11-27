@@ -15,6 +15,7 @@ final class ServerUtilities {
     public static final int minimumPortNumber = 0;
     public static final int maximumPortNumber = 32767;
     public static final int maximumReceivedMessageLength = 1024;
+    public static final int timeout_milliseconds = 0;
 
     /**
      * Function that takes a port number and validates is in the correct range
