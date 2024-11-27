@@ -66,9 +66,9 @@ public class TCPServer {
 
     /**
      * Prints a message and send to the output stream the same message
-     * @param message
-     * @param output
-     * @throws IOException
+     * @param message the message to print
+     * @param output where to send the message after printing (echo)
+     * @throws IOException if an I/O error occurs
      */
     private void printAndEcho(String message, OutputStream output) throws IOException {
         System.out.println("<<< " + message);
