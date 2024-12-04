@@ -19,10 +19,11 @@ final class ServerUtilities {
 
     /**
      * Function that takes a port number and validates is in the correct range
+     *
      * @param portNumber The number we are testing
      * @return true if it is valid
      */
-    static boolean validatePortNumber(int portNumber){
+    static boolean validatePortNumber(int portNumber) {
         boolean compliesWithUpperBound = portNumber <= maximumPortNumber;
         boolean compliesWithLowerBound = portNumber >= minimumPortNumber;
         return compliesWithLowerBound && compliesWithUpperBound;
@@ -32,6 +33,7 @@ final class ServerUtilities {
      * function that raises an exception when an invalid port number is given (see minimumPortNumber
      * and maximumPortNumber).
      * If the port is valid, it does nothing
+     *
      * @param portNumber the number to be tested
      * @throws IllegalArgumentException when the port is not in the correct range
      */
@@ -45,7 +47,8 @@ final class ServerUtilities {
 
     /**
      * Function that transform values from a byte array buffer to a string
-     * @param buffer the buffer to transform
+     *
+     * @param buffer    the buffer to transform
      * @param totalRead the number of characters read from the buffer
      * @return a string of the encoded (UTF-8) values of the buffer (Without the last line break
      */
@@ -58,6 +61,7 @@ final class ServerUtilities {
     /**
      * Function that returns a port number based on the input argument array.
      * the args should be of length 0 or 1, or an exception would be raised.
+     *
      * @param args The argument array
      * @return the default port of no arguments are given, or the integer casting of the first argument
      * @throws IllegalArgumentException when the argument array has a length bigger than one
@@ -75,17 +79,46 @@ final class ServerUtilities {
     /**
      * Function that process an input stream with a buffer to get the value the stream received
      * as a string
+     *
      * @param buffer the buffer that will be used to read the stream.
-     * @param input the input stream to be read
-     * @return the data received as an string
+     * @param input  the input stream to be read
+     * @return the data received as a string
      * @throws IOException If the first byte cannot be read for any reason other than end of file,
-     * or if the input stream has been closed, or if some other I/ O error occurs.
+     *                     or if the input stream has been closed, or if some other I/ O error occurs.
      */
-    static String processInput(byte[] buffer,InputStream input) throws IOException {
+    static String processInput(byte[] buffer, InputStream input) throws IOException {
         int totalRead = input.read(buffer, 0, maximumReceivedMessageLength);
         if (totalRead == EndOfFile) {
             return "";
         }
         return getStringFromBuffer(buffer, totalRead);
+    }
+
+    /**
+     * Returns a message that starts with the current thread name
+     * @param message The message to be tagged
+     * @return a string in the form threadName: message
+     */
+    static String tagMessage(String message) {
+        return Thread.currentThread().getName() + ": " + message;
+    }
+
+    /**
+     * Returns a message preceded by a name
+     * @param tag the preceding string
+     * @param message the message to be concatenated
+     * @return a string in the form tag: message
+     */
+    static String tagMessage(String tag, String message) {
+        return tag + ": " + message;
+    }
+
+    /**
+     * function that returns a version of a string that has no "\n" character at the end
+     * @param message the message to test
+     * @return the message without "\n" character at the end
+     */
+    static String noTrailingWhitespace(String message) {
+        return message.endsWith("\n") ? message.substring(0, message.length() - 1) : message;
     }
 }
