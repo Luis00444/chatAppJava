@@ -4,40 +4,64 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.io.InputStreamReader;
-
-/****************************************
- *TCP client to read and send message
+/**
+ * **Creates a TCP client to send and receive messages
  * Usage java TCPClient.java "server address" "port"
- ***************************************/
+ */
 public class TCPClient {
-    public static void main(String[] args) throws IOException {
-        String Host = args[0];
-        int port = Integer.parseInt(args[1]);
+private static Socket tcp_socket;
 
-        Socket tcp_socket;
+    public void Tcp_IO_manager(Socket tcp_socket) throws IOException {
+        BufferedReader userInputReader = new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader serverReader = new BufferedReader(new InputStreamReader(tcp_socket.getInputStream(), StandardCharsets.UTF_8)); // Server response
+        PrintWriter serverWriter = new PrintWriter(new OutputStreamWriter(tcp_socket.getOutputStream(), StandardCharsets.UTF_8), true); // Send data to server;
+        System.out.println("Type your message and press Enter. Press <CTRL>+D(Z for windows) to exit.");
+        Console console = System.console();
+        while (true) {
+            // Check if there's user input
+            if (System.in.available() > 0) {
+                String userInput = console.readLine();
+                if (userInput == null) break; // Exit if ctrl+c
+                serverWriter.println(userInput);
+            }
+            // Check if there's a message from the server
+            try {
+                if (serverReader.ready()) {
+                    String serverMessage = serverReader.readLine();
+                    if (serverMessage != null) {
+                        System.out.println("Server: " + serverMessage);
+                    }
+                }
+            } catch (SocketTimeoutException e) {
+                System.out.println("Socket timed out");
+            }
+            }
+        }
+
+    public TCPClient(String host, int port ) throws IOException {
         try {
-            InetAddress serverAddr = InetAddress.getByName(Host);
+            InetAddress serverAddr = InetAddress.getByName(host);
             tcp_socket = new Socket(serverAddr, port);
             System.out.println("Connected to TCP server.");
         } catch (UnknownHostException e) {
             throw new UnknownHostException("Host not found." + e.getMessage());
         }
-
-        //Configuring Input/Output streams
-        BufferedReader userInputReader = new BufferedReader(new InputStreamReader(System.in));
-        BufferedReader serverReader = new BufferedReader(new InputStreamReader(tcp_socket.getInputStream(), StandardCharsets.UTF_8)); // Server response
-        PrintWriter serverWriter = new PrintWriter(new OutputStreamWriter(tcp_socket.getOutputStream(), StandardCharsets.UTF_8), true); // Send data to server;
-        System.out.println("Type your message and press Enter. Press <CTRL>+D(Z for windows) to exit.");
-
-        String userInput;
-        while ((userInput = userInputReader.readLine()) != null) {
-            serverWriter.println("Client:" + userInput);
-            String serverOutput = serverReader.readLine();
-            System.out.println(serverOutput);
-        }
+    }
+    public void closeConnection(Socket tcpSocket) throws IOException {
+        tcpSocket.close();
         System.out.println("Connection closed.");
+    }
 
-        // Close the socket when done
-        tcp_socket.close();
+    public static void main(String[] args) throws IOException {
+        String Host = args[0];
+        int port = Integer.parseInt(args[1]);
+        //Create tcp socket
+        TCPClient tcpClient = new TCPClient(Host, port);
+
+        try {
+            tcpClient.Tcp_IO_manager(tcp_socket);
+        } finally {
+            tcpClient.closeConnection(tcp_socket);
+        }
     }
 }
