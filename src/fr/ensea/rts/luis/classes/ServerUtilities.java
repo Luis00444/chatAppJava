@@ -77,7 +77,7 @@ final class ServerUtilities {
      * as a string
      * @param buffer the buffer that will be used to read the stream.
      * @param input the input stream to be read
-     * @return the data received as an string
+     * @return the data received as a string
      * @throws IOException If the first byte cannot be read for any reason other than end of file,
      * or if the input stream has been closed, or if some other I/ O error occurs.
      */
@@ -87,5 +87,15 @@ final class ServerUtilities {
             return "";
         }
         return getStringFromBuffer(buffer, totalRead);
+    }
+
+    static String tagMessage(String message){
+        return Thread.currentThread().getName() + ": " + message;
+    }
+    static String tagMessage(String tag, String message){
+        return tag + ": " + message;
+    }
+    static String noTrailingWhitespace(String message){
+        return message.endsWith("\n") ? message.substring(0, message.length()-1) : message;
     }
 }

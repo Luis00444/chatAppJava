@@ -5,8 +5,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static fr.ensea.rts.luis.classes.ServerUtilities.*;
 
@@ -37,7 +35,8 @@ public class TCPMultiServer extends TCPServer {
                 try {
                     Socket receiveSocket = serverSocket.accept();
                     outs.add(receiveSocket.getOutputStream());
-                    new TCPThreadConnection(receiveSocket,outs).start();
+                    MessageManager messageManager = new CommandMessageManager(outs,receiveSocket.getOutputStream());
+                    new TCPThreadConnection(receiveSocket,messageManager).start();
                 } catch (SocketTimeoutException e) {
                     isListening = false;
                 }

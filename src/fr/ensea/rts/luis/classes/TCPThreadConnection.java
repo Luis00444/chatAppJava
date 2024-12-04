@@ -1,34 +1,23 @@
 package fr.ensea.rts.luis.classes;
 
+import fr.ensea.rts.luis.exceptions.QuitConnectionException;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 
-import static fr.ensea.rts.luis.classes.ServerUtilities.maximumReceivedMessageLength;
-import static fr.ensea.rts.luis.classes.ServerUtilities.processInput;
+import static fr.ensea.rts.luis.classes.ServerUtilities.*;
 
 public class TCPThreadConnection extends Thread {
     private final InputStream input;
-    private final OutputStream output;
-    private final MultiOutputStream outs;
+    private final MessageManager manager;
     private final Socket socket;
 
-    public TCPThreadConnection(Socket socket, MultiOutputStream outs) throws IOException {
+    public TCPThreadConnection(Socket socket, MessageManager manager) throws IOException {
         this.input = socket.getInputStream();
-        this.outs = outs;
-        this.output = socket.getOutputStream();
+        this.manager = manager;
         this.socket = socket;
         this.setName(socket.getRemoteSocketAddress().toString());
-    }
-
-    private void writeToOuts(String message) throws IOException {
-        if (!message.endsWith("\n")){
-            message = message.concat("\n");
-        }
-        outs.write_except(message.getBytes(StandardCharsets.UTF_8), output);
     }
     public void run() {
         System.out.println("TCP connection started");
@@ -37,30 +26,27 @@ public class TCPThreadConnection extends Thread {
             boolean reading = true;
             while(reading) {
                 String received = processInput(buffer,input);
-                String message = Thread.currentThread().getName() + ": " + received;
-                if (received.isEmpty()) {
-                    System.out.println("Message is empty");
-                    reading = false;
-                    String goodbye = Thread.currentThread().getName() + " has left\n";
-                    outs.write(goodbye.getBytes(StandardCharsets.UTF_8));
+                try{
+                    manager.processMessage(received);
                 }
-                else {
-                    System.out.println(message);
-                    writeToOuts(message);
+                catch(QuitConnectionException e){
+                    reading = false;
+                    socket.close();
+                    manager.close();
+                    input.close();
                 }
             }
         }
         catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("TCP connection failed for "+ socket.getRemoteSocketAddress());
         }
         finally {
-            outs.remove(output);
             try {
                 input.close();
-                output.close();
                 socket.close();
+                manager.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("TCP connection failed for "+ socket.getRemoteSocketAddress());
             }
         }
     }

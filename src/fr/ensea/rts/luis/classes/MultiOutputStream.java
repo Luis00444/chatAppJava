@@ -2,22 +2,27 @@ package fr.ensea.rts.luis.classes;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class MultiOutputStream extends OutputStream {
-    private List<OutputStream> streams;
+    private final List<OutputStream> streams;
+    private final Dictionary<OutputStream, String> outputNames;
+    private static int counter = 0;
+
     public MultiOutputStream(List<OutputStream> streams) {
         this.streams = streams;
+        outputNames = new Hashtable<>();
     }
     public MultiOutputStream() {
-        this.streams = new ArrayList<>();
+        this(new ArrayList<>());
     }
     public void add(OutputStream stream) {
         this.streams.add(stream);
+        setName(stream, "Person #" + ++counter);
     }
     public void remove(OutputStream stream) {
         this.streams.remove(stream);
+        this.outputNames.remove(stream);
     }
 
     @Override
@@ -52,5 +57,12 @@ public class MultiOutputStream extends OutputStream {
         for (OutputStream stream : streams) {
             stream.close();
         }
+    }
+
+    public String getName(OutputStream stream) {
+        return outputNames.get(stream);
+    }
+    public void setName(OutputStream stream, String name) {
+        outputNames.put(stream, name);
     }
 }

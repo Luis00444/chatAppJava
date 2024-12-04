@@ -18,7 +18,7 @@ import static fr.ensea.rts.luis.classes.ServerUtilities.*;
  *  </code>
  */
 public class UDPServer {
-    private DatagramSocket socket;
+    private final DatagramSocket socket;
     private boolean isListening;
 
 

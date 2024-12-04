@@ -1,7 +1,8 @@
 package fr.ensea.rts.luis.classes;
-import javax.net.ssl.SNIServerName;
 import java.net.*;
 import java.io.Console;
+import java.nio.charset.StandardCharsets;
+
 /**************************************************
 // UDP client to send messages
 // Usage UDPClient.java "server" "port"
@@ -34,7 +35,7 @@ public class UDPClient {
                     break;
                 }
 
-                byte[] data = userInput.getBytes("UTF-8");
+                byte[] data = userInput.getBytes(StandardCharsets.UTF_8);
 
                 // Create a DatagramPacket to send the data
                 DatagramPacket packet = new DatagramPacket(data, data.length, serverAddress, port);
