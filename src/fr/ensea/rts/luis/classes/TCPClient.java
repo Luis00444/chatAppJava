@@ -1,10 +1,9 @@
 package fr.ensea.rts.luis.classes;
-import javax.net.ssl.SNIServerName;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.io.InputStreamReader;
-import java.io.Console;
+
 /**
  * **Creates a TCP client to send and receive messages
  * Usage java TCPClient.java "server address" "port"
@@ -14,7 +13,6 @@ private static Socket tcp_socket;
 
     public void Tcp_IO_manager(Socket tcp_socket) throws IOException {
         Console console = System.console();
-        //BufferedReader userInputReader = new BufferedReader(new InputStreamReader(console));
         BufferedReader serverReader = new BufferedReader(new InputStreamReader(tcp_socket.getInputStream(), StandardCharsets.UTF_8)); // Server response
         PrintWriter serverWriter = new PrintWriter(new OutputStreamWriter(tcp_socket.getOutputStream(), StandardCharsets.UTF_8), true); // Send data to server;
         System.out.println("Type your message and press Enter. Press <CTRL>+D(Z for windows) to exit.");
