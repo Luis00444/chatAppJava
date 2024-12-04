@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 
-import static fr.ensea.rts.luis.classes.ServerUtilities.*;
+import static fr.ensea.rts.luis.classes.ServerUtilities.maximumReceivedMessageLength;
+import static fr.ensea.rts.luis.classes.ServerUtilities.processInput;
 
 public class TCPThreadConnection extends Thread {
     private final InputStream input;
@@ -19,34 +20,32 @@ public class TCPThreadConnection extends Thread {
         this.socket = socket;
         this.setName(socket.getRemoteSocketAddress().toString());
     }
+
     public void run() {
         System.out.println("TCP connection started");
         try {
             byte[] buffer = new byte[maximumReceivedMessageLength];
             boolean reading = true;
-            while(reading) {
-                String received = processInput(buffer,input);
-                try{
+            while (reading) {
+                String received = processInput(buffer, input);
+                try {
                     manager.processMessage(received);
-                }
-                catch(QuitConnectionException e){
+                } catch (QuitConnectionException e) {
                     reading = false;
                     socket.close();
                     manager.close();
                     input.close();
                 }
             }
-        }
-        catch (IOException e) {
-            System.out.println("TCP connection failed for "+ socket.getRemoteSocketAddress());
-        }
-        finally {
+        } catch (IOException e) {
+            System.out.println("TCP connection failed for " + socket.getRemoteSocketAddress());
+        } finally {
             try {
                 input.close();
                 socket.close();
                 manager.close();
             } catch (IOException e) {
-                System.out.println("TCP connection failed for "+ socket.getRemoteSocketAddress());
+                System.out.println("TCP connection failed for " + socket.getRemoteSocketAddress());
             }
         }
     }

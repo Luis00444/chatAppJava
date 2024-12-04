@@ -7,9 +7,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 public class CommandMessageManager implements MessageManager {
-    private final MultiOutputStream multiOutputStream;
-    private final OutputStream ThreadOutputStream;
-    private static final String helpString = """
+    public static final String helpString = """
             Commands:
             #quit
             #exit           Finish the communication
@@ -18,60 +16,59 @@ public class CommandMessageManager implements MessageManager {
             #name <String>  Changes the name of the thread
             #sleep <long>   Makes the thread sleep <long> milliseconds
             """;
+    private final MultiOutputStream multiOutputStream;
+    private final OutputStream ThreadOutputStream;
 
-    public CommandMessageManager(MultiOutputStream outs, OutputStream threadOutputStream){
+    public CommandMessageManager(MultiOutputStream outs, OutputStream threadOutputStream) {
         this.multiOutputStream = outs;
         this.ThreadOutputStream = threadOutputStream;
     }
+
     public void processMessage(String message) throws IOException, QuitConnectionException {
-        if(message.startsWith("#")){
+        message = message.trim();
+        if (message.startsWith("#")) {
             try {
                 processCommands(message.substring(1));
-            }
-            catch (InterruptedException e){
+            } catch (InterruptedException e) {
                 printErrorMessage(e.getMessage());
             }
-        }
-        else{
+        } else if (message.isEmpty()) {
+            throw new QuitConnectionException();
+        } else {
             writeToOuts(this.tagMessage(message));
             System.out.println(this.tagMessage(message));
         }
     }
-    private String tagMessage(String message){
+
+    private String tagMessage(String message) {
         return ServerUtilities.tagMessage(multiOutputStream.getName(ThreadOutputStream), message);
     }
+
     private void processCommands(String message) throws IOException, InterruptedException {
         message = message.trim();
-        if (message.equals("quit")){
+        if (message.equals("quit")) {
             printGoodbye();
-        }
-        else if (message.equals("help")){
+        } else if (message.equals("help")) {
             printHelp();
-        }
-        else if (message.equals("exit")){
+        } else if (message.equals("exit")) {
             printGoodbye();
-        }
-        else if (message.equals("name")){
+        } else if (message.equals("name")) {
             printName();
-        }
-        else if (message.equals("version")){
+        } else if (message.equals("version")) {
             printVersion();
-        }
-        else if (message.startsWith("name ")){
+        } else if (message.startsWith("name ")) {
             String newName = message.substring("name ".length());
             changeName(newName);
-        }
-        else if (message.startsWith("sleep ")){
+        } else if (message.startsWith("sleep ")) {
             int sleep = Integer.parseInt(message.substring("sleep ".length()));
             Thread.sleep(sleep);
-        }
-        else{
+        } else {
             printErrorMessage("Unknown command: " + message);
         }
     }
 
     private void writeToOuts(String message) throws IOException {
-        if (!message.endsWith("\n")){
+        if (!message.endsWith("\n")) {
             message = message.concat("\n");
         }
         multiOutputStream.write_except(message.getBytes(StandardCharsets.UTF_8), ThreadOutputStream);
@@ -87,18 +84,23 @@ public class CommandMessageManager implements MessageManager {
     public void printHelp() throws IOException {
         ThreadOutputStream.write(helpString.getBytes(StandardCharsets.UTF_8));
     }
-    public void printName() throws IOException{
+
+    public void printName() throws IOException {
         ThreadOutputStream.write(("Name: " + multiOutputStream.getName(ThreadOutputStream) + "\n").getBytes(StandardCharsets.UTF_8));
     }
+
     public void changeName(String newName) {
         multiOutputStream.setName(ThreadOutputStream, newName.trim());
     }
+
     public void printVersion() throws IOException {
         ThreadOutputStream.write(("Version: CommandMessageManager-1").getBytes(StandardCharsets.UTF_8));
     }
+
     public void printErrorMessage(String message) throws IOException {
         ThreadOutputStream.write(("Error: " + message + "\n").getBytes(StandardCharsets.UTF_8));
     }
+
     public void close() throws IOException {
         multiOutputStream.remove(ThreadOutputStream);
         ThreadOutputStream.close();

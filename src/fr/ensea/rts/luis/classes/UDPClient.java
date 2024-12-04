@@ -1,12 +1,15 @@
 package fr.ensea.rts.luis.classes;
-import java.net.*;
+
 import java.io.Console;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 
 /**************************************************
-// UDP client to send messages
-// Usage UDPClient.java "server" "port"
-***************************************************/
+ // UDP client to send messages
+ // Usage UDPClient.java "server" "port"
+ ***************************************************/
 public class UDPClient {
     private static String serverName;
     private static int port;
@@ -30,7 +33,7 @@ public class UDPClient {
             while (true) {
                 String userInput = console.readLine();
                 // Exit if the user types "exit"
-                if (userInput.equalsIgnoreCase("exit") || (userInput.length()>1024)){
+                if (userInput.equalsIgnoreCase("exit") || (userInput.length() > 1024)) {
                     System.out.println("Client exiting.");
                     break;
                 }

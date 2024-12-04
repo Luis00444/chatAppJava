@@ -21,26 +21,23 @@ public class BasicMessageManager implements MessageManager {
     @Override
     public void processMessage(String message) throws IOException {
         message = noTrailingWhitespace(message);
-        if (message.startsWith("#")){
-            if (message.equals("#quit")){
+        if (message.startsWith("#")) {
+            if (message.equals("#quit")) {
                 printGoodbye();
                 throw new QuitConnectionException();
-            }
-            else if (message.equals("#help")){
+            } else if (message.equals("#help")) {
                 printHelp();
-            }
-            else{
+            } else {
                 printErrorMessage(message);
             }
-        }
-        else{
+        } else {
             writeToOuts(tagMessage(message));
             System.out.println(tagMessage(message));
         }
     }
 
     private void writeToOuts(String message) throws IOException {
-        if (!message.endsWith("\n")){
+        if (!message.endsWith("\n")) {
             message = message.concat("\n");
         }
         multiOutputStream.write_except(message.getBytes(StandardCharsets.UTF_8), ThreadOutputStream);
@@ -51,6 +48,7 @@ public class BasicMessageManager implements MessageManager {
         ThreadOutputStream.close();
         multiOutputStream.remove(ThreadOutputStream);
     }
+
     public void printHelp() throws IOException {
         String help = "#quit: quit the session\n#help: show this message\n";
         ThreadOutputStream.write(help.getBytes(StandardCharsets.UTF_8));
@@ -58,7 +56,7 @@ public class BasicMessageManager implements MessageManager {
 
     @Override
     public void printErrorMessage(String badString) throws IOException {
-        String errorString = "error: incorrect command " +badString + "\n";
+        String errorString = "error: incorrect command " + badString + "\n";
         ThreadOutputStream.write(errorString.getBytes(StandardCharsets.UTF_8));
     }
 
