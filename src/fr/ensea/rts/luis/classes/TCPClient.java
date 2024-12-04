@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.io.InputStreamReader;
+import java.io.Console;
 /**
  * **Creates a TCP client to send and receive messages
  * Usage java TCPClient.java "server address" "port"
@@ -12,28 +13,22 @@ public class TCPClient {
 private static Socket tcp_socket;
 
     public void Tcp_IO_manager(Socket tcp_socket) throws IOException {
-        BufferedReader userInputReader = new BufferedReader(new InputStreamReader(System.in));
+        Console console = System.console();
+        //BufferedReader userInputReader = new BufferedReader(new InputStreamReader(console));
         BufferedReader serverReader = new BufferedReader(new InputStreamReader(tcp_socket.getInputStream(), StandardCharsets.UTF_8)); // Server response
         PrintWriter serverWriter = new PrintWriter(new OutputStreamWriter(tcp_socket.getOutputStream(), StandardCharsets.UTF_8), true); // Send data to server;
         System.out.println("Type your message and press Enter. Press <CTRL>+D(Z for windows) to exit.");
-        Console console = System.console();
         while (true) {
-            // Check if there's user input
-            if (System.in.available() > 0) {
+            try{
                 String userInput = console.readLine();
                 if (userInput == null) break; // Exit if ctrl+c
                 serverWriter.println(userInput);
-            }
-            // Check if there's a message from the server
-            try {
-                if (serverReader.ready()) {
-                    String serverMessage = serverReader.readLine();
-                    if (serverMessage != null) {
-                        System.out.println("Server: " + serverMessage);
-                    }
+                String serverMessage = serverReader.readLine();
+                if (serverMessage != null) {
+                    System.out.println("Server: " + serverMessage);
                 }
-            } catch (SocketTimeoutException e) {
-                System.out.println("Socket timed out");
+            } catch (InterruptedIOException e) {
+                System.out.println(e + "Server interrupted.");
             }
             }
         }
