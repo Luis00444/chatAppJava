@@ -13,6 +13,7 @@ public class UDPClient {
     private final InetSocketAddress address;
     private final DatagramSocket socket;
     private final DatagramPacket packet;
+    private static final int defaultPort = 1234;
 
     public UDPClient(String serverName, int port) throws SocketException {
         this(new InetSocketAddress(serverName,port));
@@ -24,7 +25,7 @@ public class UDPClient {
         packet.setSocketAddress(address);
     }
     public UDPClient() throws SocketException {
-        this("localhost", ServerUtilities.defaultPort);
+        this("localhost", defaultPort);
     }
 
     private static InetSocketAddress processArgs (String[] args) {
@@ -33,11 +34,11 @@ public class UDPClient {
 
         if (args.length == 0){
             serverName = "localhost";
-            port = ServerUtilities.defaultPort;
+            port = defaultPort;
         }
         else if (args.length == 1){
             serverName = args[0];
-            port = ServerUtilities.defaultPort;
+            port = defaultPort;
         }
         else if (args.length == 2){
             serverName = args[0];
@@ -57,25 +58,24 @@ public class UDPClient {
                 try {
                     receive();
                 } catch (IOException e) {
-                    Thread.currentThread().interrupt();
+                    break;
                 }
                 System.out.println(new String(packet.getData(), StandardCharsets.UTF_8));
             }
+            Thread.currentThread().interrupt();
         });
+        receive_thread.start();
         try {
-            receive_thread.start();
             Console console = System.console();
             if (console == null) {
                 System.out.println("No console available");
                 return;
             }
             System.out.println("Type your message (type 'exit' to quit):");
-            receive_thread.start();
             while (true) {
                 String userInput = console.readLine();
                 if (userInput.equalsIgnoreCase("exit")) {
                     System.out.println("Client exiting.");
-                    receive_thread.interrupt();
                     break;
                 }
                 if (userInput.length() > 1024){
@@ -85,9 +85,14 @@ public class UDPClient {
             }
 
             // Close the socket when done
-            socket.close();
+
+            //receive_thread.interrupt();
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+        finally {
+
+            socket.close();
         }
     }
     public void receive () throws IOException {
