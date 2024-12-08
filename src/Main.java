@@ -10,7 +10,7 @@ public class Main {
             port is 1234, the type is tcp, and the address is localhost for clients.
            
             Usage:
-            [{-u, -t, -m}] [{-s, -c}][-h] [port]
+            [{-u, -t, -m}] [{-s, -c}][-h] [-address=<ip>] [port]
            
             Options:
             -u                      UDP connection
