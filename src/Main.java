@@ -7,18 +7,19 @@ public class Main {
     public static final String helpString = """
             Help:
             Starts a chat server with the described parameters. By default, the
-            port is 1234 and the type is tcp.
+            port is 1234, the type is tcp, and the address is localhost for clients.
            
             Usage:
             [{-u, -t, -m}] [{-s, -c}][-h] [port]
            
             Options:
-            -u  UDP connection
-            -t  TCP connection
-            -m  TCP server that accept multiple connections. if client, is equal to TCP
-            -s  Server mode
-            -c  Client mode
-            -h  Print this message and exit
+            -u                      UDP connection
+            -t                      TCP connection
+            -m                      TCP server that accept multiple connections. if client, is equal to TCP
+            -s                      Server mode
+            -c                      Client mode
+            -h                      Print this message and exit
+            -address=<ip address>   set the ip address to connect to (only for clients, ignored otherwise).
            """;
     public static void checkIfAssigned(String type) throws IllegalArgumentException {
         if (!type.isEmpty()) {
@@ -36,6 +37,7 @@ public class Main {
         int port = 0;
         String protocol = "";
         String type = "";
+        String address = "";
         boolean printHelp = false;
         if (args.length > 3){
             throw new IllegalArgumentException("Too many arguments. At most 1 arguments and 2 flag are required.");
@@ -45,6 +47,10 @@ public class Main {
         }
         for (String arg : args) {
             if (arg.startsWith("-")) {
+                if(arg.startsWith("-address=")){
+                    address = arg.substring("-address=".length());
+                    continue;
+                }
                 switch (arg) {
                     case "-u", "-t", "-m" -> {
                         checkIfAssigned(protocol);
@@ -69,13 +75,16 @@ public class Main {
         if (type.isEmpty()){
             type = "-s";
         }
+        if (address.isEmpty()){
+            address = "127.0.0.1";
+        }
         if (printHelp){
             protocol = "help";
         }
         if (port == 0){
             port = ServerUtilities.defaultPort;
         }
-        return new String[]{protocol, String.valueOf(port), type};
+        return new String[]{protocol, String.valueOf(port), type, address};
     }
     public static Launchable getServerFromProtocol(String protocol, int port) throws IllegalArgumentException, SocketException {
         if (protocol.equals("-t")){
@@ -86,27 +95,31 @@ public class Main {
         }
         return new TCPMultiServer(port);
     }
-    public static Launchable getClientFromProtocol(String protocol, int port) throws IllegalArgumentException, IOException {
+    public static Launchable getClientFromProtocol(String protocol,String address, int port) throws IllegalArgumentException, IOException {
         if (protocol.equals("-t") || protocol.equals("-m")){
-            return new TCPClient("localhost",port);
+            return new TCPClient(address,port);
         }
-        return new UDPClient("localhost",port);
+        return new UDPClient(address,port);
     }
     public static void main(String[] args) throws IOException {
         String[] processed = getServerFromArgs(args);
+
         String protocol = processed[0];
         int port = Integer.parseInt(processed[1]);
         String type = processed[2];
+        String address = processed[3];
+
         if (protocol.equals("help")){
             System.out.println(helpString);
             return;
         }
+
         Launchable toLaunch;
         if (type.equals("-s")){
             toLaunch = getServerFromProtocol(protocol,port);
         }
         else{
-            toLaunch = getClientFromProtocol(protocol,port);
+            toLaunch = getClientFromProtocol(protocol,address,port);
         }
         toLaunch.launch();
     }
