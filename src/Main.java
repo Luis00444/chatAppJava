@@ -99,7 +99,7 @@ public class Main {
         if (protocol.equals("-t") || protocol.equals("-m")){
             return new TCPClient(address,port);
         }
-        return new UDPClient(address,port);
+        else{return new UDPClient(address, port);}
     }
     public static void main(String[] args) throws IOException {
         String[] processed = getServerFromArgs(args);
