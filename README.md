@@ -4,9 +4,9 @@
 
 This project has a package where you could find the different classes for
 TCP and UDP servers and clients. The Main program read from the command line
-the port to listen and flags to execute the server or client on localhost,
-and has flags to indicate if a server or client, and the protocol to use for
-the connection. If no argument is given or -h is passed as a flag, print the help
+the port to listen and flags to execute the server or client,
+and has flags to indicate if a server or client, the address for the client as a flag, and the protocol to use for
+the connection. If no argument is given or -h is passed as a flag, print the help.
 
 The main classes in the package are:
 * UDPServer: udp server
