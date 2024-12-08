@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
  * and the send and receive methods could be used if needed to integrate it to another
  * program
  */
-public class UDPClient {
+public class UDPClient implements Launchable{
     private final InetSocketAddress address;
     private final DatagramSocket socket;
     private final DatagramPacket packet;
@@ -79,7 +79,7 @@ public class UDPClient {
     /**
      * Run an interactive session to send and receive data from a server
      */
-    public void run () {
+    public void launch () {
         Thread receive_thread;
         receive_thread = new Thread(()->{
             DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
@@ -149,6 +149,6 @@ public class UDPClient {
     public static void main(String[] args) throws SocketException {
         InetSocketAddress serverAddress = UDPClient.processArgs(args);
         UDPClient client = new UDPClient(serverAddress);
-        client.run();
+        client.launch();
     }
 }

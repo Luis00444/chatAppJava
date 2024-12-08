@@ -20,7 +20,7 @@ import static fr.ensea.rts.luis.classes.ServerUtilities.*;
  * server.launch();
  * </code>
  */
-public class UDPServer {
+public class UDPServer implements Launchable{
     private final DatagramSocket socket;
     private boolean isListening;
 
@@ -57,20 +57,29 @@ public class UDPServer {
     }
 
     /**
+     * Creates a new datagram packet with length and buffer length of {@code maximumReceivedMessageLength},
+     * and set the address and port of the socket
+     */
+    private DatagramPacket createNewPacket() {
+        DatagramPacket packet = new DatagramPacket(new byte[ServerUtilities.maximumReceivedMessageLength], ServerUtilities.maximumReceivedMessageLength);
+        packet.setPort(socket.getLocalPort());
+        packet.setAddress(socket.getLocalAddress());
+        return packet;
+    }
+    /**
      * Starts to listen the default address and the selected port.
      * Incoming datagrams are shown preceded by "<<< "
-     * If it receives an empty message, it finishes the while loop
+     * If it receives the message "exit", it finishes the loop
      */
     public void launch() {
         if (!socket.isBound()) {
             throw new IllegalStateException("Server is not bound");
         }
         isListening = true;
-        byte[] buffer = new byte[maximumReceivedMessageLength];
-        DatagramPacket packet = new DatagramPacket(buffer, maximumReceivedMessageLength);
-        packet.setPort(socket.getLocalPort());
-        packet.setAddress(socket.getLocalAddress());
-        System.out.println(this);
+        DatagramPacket packet = createNewPacket();
+        
+        System.out.println(getServerStateString());
+        //while the socket is open, receives a packet and prints it
         try {
             while (!socket.isClosed()) {
                 socket.receive(packet);
@@ -78,7 +87,7 @@ public class UDPServer {
 
                 String message = getStringFromBuffer(received, packet.getLength());
 
-                if (message.isEmpty()) {
+                if (message.equals("exit")) {
                     socket.close();
                 } else {
                     System.out.println("<<< " + message);
@@ -88,6 +97,7 @@ public class UDPServer {
             System.err.println("Listening finalized with an IOException");
             System.err.println(e.getMessage());
         } finally {
+            //in case any error occurs, the socket get closed
             socket.close();
         }
 
@@ -95,6 +105,15 @@ public class UDPServer {
 
     @Override
     public String toString() {
+        return getServerStateString();
+    }
+
+    /**
+     * Shows the state of the server as a string. The state says if it is listening,
+     * which IP address and which port is configured to listen
+     * @return A string that indicates the state of the server
+     */
+    private String getServerStateString() {
         if (isListening) {
             return "Server is listening in port " + socket.getLocalPort() + " at " + socket.getLocalAddress();
         } else {

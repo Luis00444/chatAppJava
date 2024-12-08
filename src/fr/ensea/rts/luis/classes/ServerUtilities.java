@@ -8,14 +8,13 @@ import java.util.Arrays;
 /**
  * Class that stores constants and utility methods for the servers.
  */
-final class ServerUtilities {
+final public class ServerUtilities {
     public static final int EndOfFile = -1;
     public static final int defaultPort = 1234;
     public static final String defaultHostAddress = "0.0.0.0";
     public static final int minimumPortNumber = 0;
     public static final int maximumPortNumber = 32767;
     public static final int maximumReceivedMessageLength = 1024;
-    public static final int timeout_milliseconds = 0;
 
     /**
      * Function that takes a port number and validates is in the correct range

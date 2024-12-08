@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 
 import static fr.ensea.rts.luis.classes.ServerUtilities.*;
 
@@ -52,31 +51,42 @@ public class TCPMultiServer extends TCPServer {
     }
 
     /**
-     * Launches the server. It starts to listen to connections at the given port at creation
+     * Launches the server. It starts to listen to connections at the given port at creation.
+     * This server creates a thread for each connection, and when a client send a message, the server
+     * sends the message to each other client
      * @throws IOException if an I/O error occurs
      */
     @Override
     public void launch() throws IOException {
         isListening = true;
+        //creates a new server socket with the internal parameters
         try (ServerSocket serverSocket = new ServerSocket(address.getPort(), maximumQueuedConnections, address.getAddress())) {
-            serverSocket.setSoTimeout(timeout_milliseconds);
             System.out.println(this);
+
             MultiOutputStream outs = new MultiOutputStream();
             while (isListening) {
-                try {
-                    Socket receiveSocket = serverSocket.accept();
-                    outs.add(receiveSocket.getOutputStream());
-                    MessageManager messageManager = new CommandMessageManager(outs, receiveSocket.getOutputStream());
-                    new TCPThreadConnection(receiveSocket, messageManager).start();
-                } catch (SocketTimeoutException e) {
-                    isListening = false;
-                }
+                //waits for a connection, and add its output to a collection of
+                //output streams, then creates a thread with that sockets to manage the
+                //input and output for that connection
+                Socket receiveSocket = serverSocket.accept();
+                outs.add(receiveSocket.getOutputStream());
+
+                MessageManager messageManager = new CommandMessageManager(outs, receiveSocket.getOutputStream());
+                new TCPThreadConnection(receiveSocket, messageManager).start();
             }
         }
     }
 
     @Override
     public String toString() {
+        return getServerStateString();
+    }
+    /**
+     * Shows the state of the server as a string. The state says if it is listening,
+     * which IP address and which port is configured to listen
+     * @return A string that indicates the state of the server
+     */
+    private String getServerStateString() {
         if (isListening) {
             return "Server is listening in port " + getPort() + " at " + address.getAddress();
         } else {

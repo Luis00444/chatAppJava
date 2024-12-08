@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 public class CommandMessageManager implements MessageManager {
+    public static final String welcomeString = "type a message or type #help to see a list of commands\n";
     public static final String helpString = """
             Commands:
             #quit
@@ -19,9 +20,10 @@ public class CommandMessageManager implements MessageManager {
     private final MultiOutputStream multiOutputStream;
     private final OutputStream ThreadOutputStream;
 
-    public CommandMessageManager(MultiOutputStream outs, OutputStream threadOutputStream) {
+    public CommandMessageManager(MultiOutputStream outs, OutputStream threadOutputStream) throws IOException {
         this.multiOutputStream = outs;
         this.ThreadOutputStream = threadOutputStream;
+        this.ThreadOutputStream.write(welcomeString.getBytes(StandardCharsets.UTF_8));
     }
 
     public void processMessage(String message) throws IOException, QuitConnectionException {
@@ -32,9 +34,11 @@ public class CommandMessageManager implements MessageManager {
             } catch (InterruptedException e) {
                 printErrorMessage(e.getMessage());
             }
-        } else if (message.isEmpty()) {
-            throw new QuitConnectionException();
-        } else {
+        }
+        else {
+            if (message.isEmpty()){
+                return;
+            }
             writeToOuts(this.tagMessage(message));
             System.out.println(this.tagMessage(message));
         }

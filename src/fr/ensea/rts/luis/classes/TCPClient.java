@@ -1,5 +1,4 @@
 package fr.ensea.rts.luis.classes;
-import javax.net.ssl.SNIServerName;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -8,10 +7,10 @@ import java.io.InputStreamReader;
  * **Creates a TCP client to send and receive messages
  * Usage java TCPClient.java "server address" "port"
  */
-public class TCPClient {
-private static Socket tcp_socket;
+public class TCPClient implements Launchable {
+    private final Socket tcp_socket;
 
-    public void Tcp_IO_manager(Socket tcp_socket) throws IOException {
+    public void launch() throws IOException {
         BufferedReader userInputReader = new BufferedReader(new InputStreamReader(System.in));
         BufferedReader serverReader = new BufferedReader(new InputStreamReader(tcp_socket.getInputStream(), StandardCharsets.UTF_8)); // Server response
         PrintWriter serverWriter = new PrintWriter(new OutputStreamWriter(tcp_socket.getOutputStream(), StandardCharsets.UTF_8), true); // Send data to server;
@@ -47,8 +46,8 @@ private static Socket tcp_socket;
             throw new UnknownHostException("Host not found." + e.getMessage());
         }
     }
-    public void closeConnection(Socket tcpSocket) throws IOException {
-        tcpSocket.close();
+    public void closeConnection() throws IOException {
+        tcp_socket.close();
         System.out.println("Connection closed.");
     }
 
@@ -59,9 +58,9 @@ private static Socket tcp_socket;
         TCPClient tcpClient = new TCPClient(Host, port);
 
         try {
-            tcpClient.Tcp_IO_manager(tcp_socket);
+            tcpClient.launch();
         } finally {
-            tcpClient.closeConnection(tcp_socket);
+            tcpClient.closeConnection();
         }
     }
 }

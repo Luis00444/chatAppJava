@@ -14,7 +14,7 @@ import static fr.ensea.rts.luis.classes.ServerUtilities.*;
  * Creates a TCP echo server that receive a connection and send what it receives
  * to the client
  */
-public class TCPServer {
+public class TCPServer implements Launchable{
     private static final int maximumQueuedConnections = 10;
     private final InetSocketAddress address;
     private boolean isListening;
@@ -46,16 +46,17 @@ public class TCPServer {
     }
 
     /**
-     * Launch the server, so it start listening
-     *
+     * Launch the server, so it start listening. Stops when it receives the message "exit"
+     * This server echoes what it receives again to the client.
      * @throws IOException If an I/O error occurs
      */
     public void launch() throws IOException {
         ServerSocket serverSocket = new ServerSocket(address.getPort(), maximumQueuedConnections, address.getAddress());
         isListening = true;
         byte[] buffer = new byte[maximumReceivedMessageLength];
-        System.out.println(this);
+        System.out.println(getServerStateString());
 
+        //gets the required input and output stream
         Socket receiveSocket = serverSocket.accept();
         InputStream input = receiveSocket.getInputStream();
         OutputStream output = receiveSocket.getOutputStream();
@@ -64,14 +65,16 @@ public class TCPServer {
 
             String message = processInput(buffer, input);
 
-            if (message.isEmpty()) {
+            if (message.equals("exit")) {
                 receiveSocket.close();
                 break;
             }
 
             printAndEcho(message, output);
         }
+        //after everything, close the sockets
         input.close();
+        output.close();
         serverSocket.close();
     }
 
@@ -95,6 +98,14 @@ public class TCPServer {
 
     @Override
     public String toString() {
+        return getServerStateString();
+    }
+    /**
+     * Shows the state of the server as a string. The state says if it is listening,
+     * which IP address and which port is configured to listen
+     * @return A string that indicates the state of the server
+     */
+    private String getServerStateString() {
         if (isListening) {
             return "Server is listening in port " + getPort() + " at " + address.getAddress();
         } else {
