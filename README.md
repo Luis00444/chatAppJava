@@ -21,6 +21,8 @@ and/or receive data.
 
 Each class has a main method with their own arguments to pass to them. 
 
+### Minimal examples
+
 To establish connection in UDP:
 * Launch UDPServer.java
 * To Launch a Client type in terminal $java UDPClient.java 'server address' 'port'
